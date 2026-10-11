@@ -1,41 +1,37 @@
 package ua.logistics.model;
 
-import ua.common.BaseEntity;
 import ua.logistics.util.LogisticsUtils;
 
 import java.time.LocalDate;
 import java.util.Objects;
 
-/**
- * Shipment entity with mutable status field (marked with ✎).
- */
-public class Shipment extends BaseEntity {
+public class Shipment {
 
     private final String trackingNumber;
     private final Client sender;
-    private final String cargoType;
+    private final CargoType cargoType;
     private final double cargoWeightKg;
     private final LocalDate creationDate;
-    private String status;
+    private ShipmentStatus status;
 
-    public Shipment(String trackingNumber, Client sender, String cargoType, double cargoWeightKg, LocalDate creationDate, String status) {
-        super();
+    public Shipment(String trackingNumber, Client sender, CargoType cargoType, double cargoWeightKg, LocalDate creationDate, ShipmentStatus status) {
         LogisticsUtils.validateNotBlank(trackingNumber, "Tracking number");
         LogisticsUtils.validateNotNull(sender, "Sender");
+        LogisticsUtils.validateNotNull(cargoType, "Cargo type");
         LogisticsUtils.validateStrictlyPositive(cargoWeightKg, "Cargo weight");
         LogisticsUtils.validateNotFutureDate(creationDate, "Creation date");
 
         this.trackingNumber = trackingNumber;
         this.sender = sender;
-        this.cargoType = LogisticsUtils.checkAndNormalizeCargoType(cargoType);
+        this.cargoType = cargoType;
         this.cargoWeightKg = cargoWeightKg;
         this.creationDate = creationDate;
-
         setStatus(status);
     }
 
-    public final void setStatus(String status) {
-        this.status = LogisticsUtils.checkAndNormalizeStatus(status);
+    public final void setStatus(ShipmentStatus status) {
+        LogisticsUtils.validateNotNull(status, "Status");
+        this.status = status;
     }
 
     public String getTrackingNumber() {
@@ -46,7 +42,7 @@ public class Shipment extends BaseEntity {
         return sender;
     }
 
-    public String getCargoType() {
+    public CargoType getCargoType() {
         return cargoType;
     }
 
@@ -58,7 +54,7 @@ public class Shipment extends BaseEntity {
         return creationDate;
     }
 
-    public String getStatus() {
+    public ShipmentStatus getStatus() {
         return status;
     }
 
@@ -80,11 +76,10 @@ public class Shipment extends BaseEntity {
         return "Shipment{" +
                 "trackingNumber='" + trackingNumber + '\'' +
                 ", sender=" + sender +
-                ", cargoType='" + cargoType + '\'' +
+                ", cargoType=" + cargoType +
                 ", cargoWeightKg=" + cargoWeightKg +
                 ", creationDate=" + creationDate +
-                ", status='" + status + '\'' +
-                ", createdAt=" + createdAt +
+                ", status=" + status +
                 '}';
     }
 }
