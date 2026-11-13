@@ -8,6 +8,7 @@ import ua.logistics.model.Vehicle;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +20,6 @@ public class VehicleLoader {
         List<Vehicle> vehicles = new ArrayList<>();
         log.info("Starting to load vehicles from file: {}", filePath);
 
-        if (!Files.exists(filePath)) {
-            log.error("File does not exist: {}", filePath);
-            return vehicles;
-        }
-
-        // try-with-resources
         try (BufferedReader reader = Files.newBufferedReader(filePath)) {
             String line;
             int lineNumber = 0;
@@ -40,14 +35,15 @@ public class VehicleLoader {
                 try {
                     Vehicle vehicle = parseVehicleLine(line, lineNumber);
                     vehicles.add(vehicle);
-                } catch (InvalidDataException | NumberFormatException e) { // multi-catch
+                } catch (InvalidDataException e) {
                     log.warn("Skipping invalid record at line {}: {}", lineNumber, e.getMessage());
                 }
             }
-        } catch (IOException | SecurityException e) { // multi-catch
+        } catch (NoSuchFileException e) {
+            log.error("File does not exist: {}", filePath, e);
+        } catch (IOException | SecurityException e) {
             log.error("I/O or security error occurred while reading file: {}", filePath, e);
         } finally {
-            // finally block
             log.info("Finished processing file attempt for path: {}", filePath);
         }
 
@@ -55,7 +51,7 @@ public class VehicleLoader {
         return vehicles;
     }
 
-    private static Vehicle parseVehicleLine(String line, int lineNumber) throws InvalidDataException {
+    public static Vehicle parseVehicleLine(String line, int lineNumber) throws InvalidDataException {
         String[] parts = line.split(",", -1);
         if (parts.length < 3) {
             throw new InvalidDataException("Line " + lineNumber + ": Insufficient columns");
